@@ -555,7 +555,7 @@ function renderOpening(){
      <button id="addVendor" class="plain" ${r?"":"disabled"}>新增廠商</button>
      <div class="note">※輸入或快速搜尋廠商名稱後，點「選擇」寫入資料，收件編號依收件順序登建時自動產生收件編號。</div>
      <table class="vendor-table">
-       <tr><th>合格 ${addBadge()}</th><th>收件編號 ${addBadge()}</th><th>廠商名稱</th><th></th></tr>
+       <tr><th>合格</th><th>收件編號</th><th>廠商名稱</th><th></th></tr>
        ${vendorRows}
      </table>
    </td>
@@ -725,7 +725,7 @@ function renderEval(){
  <tr><td class="lab">工作小組成員</td><td colspan="3" class="fld"><div class="fold" onclick="fold('f3',this)"><span class="tri">▼</span>顯示</div><div id="f3" class="hidden"></div></td></tr>
  <tr><td class="lab">委員出席狀況</td><td colspan="3" class="fld"><div class="fold" onclick="fold('f4',this)"><span class="tri">▼</span>顯示</div><div id="f4" class="hidden"></div></td></tr>
  <tr><td class="lab">合格廠商</td><td colspan="3" class="white"><div class="note">●若於公文系統中郵遞區號及地址有誤請通知收發室進行機關維護。</div>${r?`<table class="brown"><tr><th>優勝</th><th>廠商名稱</th><th>廠商地址</th><th>簡報順序<br>(收件編號)</th><th>平均總評分</th><th>優勝序位</th></tr><tr><td><input type="checkbox" id="winner" ></td><td>巨鷗科技股份有限公司</td><td>407 台中市西屯區朝富路213號21樓之11(B6)</td><td>1</td><td><input class="short" ></td><td><input class="short" ></td></tr></table>`:""}</td></tr>
- ${r?`<tr class="resultrow"><td class="lab">評選結果 * ${addBadge()}</td><td colspan="3"><select id="eres" class="wide" ><option value="">--請選擇--</option><option value="pass" ${r.result==="pass"?"selected":""}>評選通過（有優勝廠商）</option><option value="fail" ${r.result==="fail"?"selected":""}>未達及格分數（無優勝廠商）</option></select></td></tr><tr id="efail" class="${r.result==="fail"?"":"hidden"} resultrow"><td class="lab">未通過後續處理 * ${addBadge()}</td><td colspan="3">秘書室作業： <select ><option>簽辦無法決標公告</option></select>　後續處理： <select id="enext" class="wide" ><option value="">--請選擇--</option><option value="retender">重新辦理招標作業</option><option value="stop">不再辦理</option></select></td></tr>`:""}
+ ${r?`<tr class="resultrow"><td class="lab">評選結果 * ${addBadge()}</td><td colspan="3"><select id="eres" class="wide" ><option value="">--請選擇--</option><option value="pass" ${r.result==="pass"?"selected":""}>評選通過（有優勝廠商）</option><option value="fail" ${r.result==="fail"?"selected":""}>未達及格分數（無優勝廠商）</option></select></td></tr><tr id="efail" class="${r.result==="fail"?"":"hidden"} resultrow"><td class="lab">未通過後續處理 * ${addBadge()}</td><td colspan="3"><select id="enext" class="wide" ><option value="">--請選擇--</option><option value="retender">重新辦理招標作業</option><option value="stop">不再辦理</option></select></td></tr>`:""}
  <tr><td colspan="4" class="actions"><button id="saveEval" class="action blue" ${r?"":"disabled"}>儲存評選作業資訊</button> <button class="action cyan" ${r?"":"disabled"}>產生評選前文件</button> <button class="action cyan" ${r?"":"disabled"}>產生評選後文件</button></td></tr></table>
  <div class="bottom">●備註：廠商公文單請分進作業，委員如因故於上網後維持保密者，公文亦須分進。<br>●備註：請完整登錄所有廠商的評選分數、優勝序位後，才可產製評選後文件。</div>`;
   if(r){q("eres").onchange=()=>{q("efail").classList.toggle("hidden",q("eres").value!=="fail");if(q("eres").value==="pass")q("winner").checked=true;if(q("eres").value==="fail")q("winner").checked=false};q("saveEval").onclick=()=>{
