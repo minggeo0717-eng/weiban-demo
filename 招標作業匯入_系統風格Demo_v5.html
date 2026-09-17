@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>招標作業匯入</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f2f1;color:#555;font:14px "Microsoft JhengHei","Noto Sans TC",Arial,sans-serif}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:184px;background:#fff;border-right:1px solid #aaa;padding:10px 8px;box-shadow:2px 0 4px rgba(0,0,0,.12)}
+.menu-box{border:1px solid #c7c7c7;border-radius:7px 7px 0 0;overflow:hidden;margin-bottom:12px;box-shadow:0 0 5px rgba(0,0,0,.18)}
+.menu-title{background:#218f91;color:#fff;font-weight:bold;padding:14px 13px}
+.menu-item{padding:11px 13px;background:#eee;border-top:1px solid #d5d5d5;font-size:13px;font-weight:600}
+.menu-item.active{background:#ddd;color:#167f82;border-left:4px solid #15979b;padding-left:9px}
+.main{flex:1;background:#fff;margin-right:22px;padding:20px 14px 40px;min-width:0}
+.page-title{height:45px;display:flex;align-items:flex-start;font-size:25px;color:#444;position:relative}
+.page-title:before{content:"";width:8px;height:27px;border-radius:5px;background:#16999a;margin:2px 13px 0 5px}
+.page-title span{background:#fff;z-index:2;padding-right:22px}
+.page-title:after{content:"";position:absolute;left:190px;right:0;top:8px;height:1px;background:#c9c9c9;box-shadow:0 6px 0 #ddd,0 12px 0 #ddd}
+.search-box{border:1px solid #d7d7d7}
+.row{display:grid;grid-template-columns:176px 1fr;min-height:50px;border-bottom:1px solid #d8d8d8}
+.row:last-child{border-bottom:0}
+.label{background:#e5ef7a;padding:14px 9px;color:#67712f}
+.field{background:#eee;padding:9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+input,select{height:31px;border:1px solid #c8c8c8;border-radius:4px;background:#fff;padding:4px 10px;color:#555;font:inherit}
+.w110{width:110px}.w170{width:170px}.w230{width:230px}.w320{width:320px}
+.buttons{text-align:center;padding:10px;border:1px solid #ddd;border-top:0}
+.btn{height:32px;border:1px solid #c7c7c7;border-radius:4px;background:#fff;color:#555;padding:0 14px;cursor:pointer;font:inherit}
+.btn:hover{background:#f5f5f5}.btn.teal{background:#2aa1a4;color:#fff;border-color:#2aa1a4}.btn.green{background:#6b9d34;color:#fff;border-color:#6b9d34}
+.result-head{display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px}
+.result-title{font-size:17px;color:#555;font-weight:bold}.result-title b{color:#258e91}
+.table-wrap{overflow:auto;border:1px solid #ccc}
+table{border-collapse:collapse;width:100%;min-width:1120px;font-size:13px}
+th{background:#e5ef7a;color:#626b32;padding:9px 7px;border-right:1px solid #cbd398;border-bottom:1px solid #bfc68f;white-space:nowrap}
+td{padding:9px 7px;border-right:1px solid #ddd;border-bottom:1px solid #ddd;background:#fff}
+tr:nth-child(even) td{background:#f5f5f5}.center{text-align:center}.right{text-align:right}
+.ok{color:#32863c;font-weight:bold}.fail{color:#c63f35;font-weight:bold}.none{color:#9a731d;font-weight:bold}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);align-items:center;justify-content:center;z-index:20}
+.modal{width:min(950px,92vw);max-height:88vh;overflow:auto;background:#fff;border-radius:5px;box-shadow:0 5px 20px rgba(0,0,0,.35)}
+.modal-title{background:#218f91;color:#fff;font-size:18px;font-weight:bold;padding:13px 16px;display:flex;justify-content:space-between}
+.modal-body{padding:16px}.close{cursor:pointer;font-size:21px}
+.notice{background:#f7f7f7;border:1px solid #ddd;padding:10px 12px;line-height:1.8;margin-bottom:12px}
+.upload{border:2px dashed #aaa;text-align:center;padding:22px;background:#fafafa}.upload input{height:auto;border:0}
+.file-table{margin-top:12px;min-width:0}.file-table th{background:#e5ef7a}
+.msg{display:none;margin-top:12px;padding:10px;border:1px solid}.msg.error{background:#fff0ef;border-color:#e0aaa5;color:#a2322b}.msg.success{background:#eff8ed;border-color:#a8cda1;color:#34743b}
+.modal-foot{text-align:right;padding:12px 16px;border-top:1px solid #ddd;background:#fafafa}
+@media(max-width:800px){.sidebar{display:none}.main{margin:0}.row{grid-template-columns:125px 1fr}.page-title:after{left:175px}}
+
+.original-page{display:none;position:fixed;inset:0;background:#fff;z-index:30;overflow:auto}
+.original-top{padding:16px 22px;border-bottom:1px solid #bbb;display:flex;justify-content:space-between;align-items:center}
+.original-content{padding:18px 24px}
+.original-title{font-size:24px;color:#444}.original-title:before{content:"";display:inline-block;width:8px;height:26px;background:#16999a;border-radius:4px;margin-right:12px;vertical-align:-4px}
+.back{background:#fff;border:1px solid #bbb;border-radius:4px;padding:7px 14px;cursor:pointer}
+.detail-grid{display:grid;grid-template-columns:180px 1fr 180px 1fr;border:1px solid #ccc;border-bottom:0;margin-top:14px}
+.dl{background:#e5ef7a;padding:11px;border-right:1px solid #ccc;border-bottom:1px solid #ccc}
+.dv{background:#eee;padding:11px;border-right:1px solid #ccc;border-bottom:1px solid #ccc}
+.original-note{margin-top:12px;color:#777}
+
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="menu-box">
+    <div class="menu-title">委辦計畫填報</div>
+    <div class="menu-item">招標前置作業</div>
+    <div class="menu-item">招標作業</div>
+    <div class="menu-item">招標作業</div>
+    <div class="menu-item">開標作業</div>
+    <div class="menu-item">評選作業</div>
+    <div class="menu-item">議價作業</div>
+    <div class="menu-item">簽約作業(含契約變更)</div>
+    <div class="menu-item">進度管理</div>
+    <div class="menu-item">驗收階段</div>
+    <div class="menu-item">保留(展延)作業</div>
+  </div>
+  <div class="menu-box">
+    <div class="menu-title">秘書室作業</div>
+    <div class="menu-item">委辦案件待辦清單</div>
+    <div class="menu-item">採購彙總表</div>
+    <div class="menu-item active">招標作業匯入</div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-title"><span>招標作業匯入</span></div>
+
+  <div class="search-box">
+    <div class="row"><div class="label">計畫年度</div><div class="field"><select class="w110" id="yearFrom"><option value="">全部</option><option selected>115</option><option>114</option><option>113</option></select></div></div>
+    <div class="row"><div class="label">計畫編號</div><div class="field"><input id="planNo" class="w230" placeholder="請輸入計畫編號"></div></div>
+    <div class="row"><div class="label">計畫名稱</div><div class="field"><input id="planName" class="w320" placeholder="請輸入計畫名稱關鍵字"></div></div>
+    <div class="row"><div class="label">招標作業資料建立</div><div class="field">
+      <label><input type="radio" name="buildStatus" value="" checked style="height:auto;width:auto"> 全部</label>
+      <label><input type="radio" name="buildStatus" value="未建立" style="height:auto;width:auto"> 未建立</label>
+      <label><input type="radio" name="buildStatus" value="已建立" style="height:auto;width:auto"> 已建立</label>
+    </div></div>
+  </div>
+  <div class="buttons"><button class="btn" onclick="doSearch()">查詢</button> <button class="btn" onclick="clearSearch()">清除</button></div>
+
+  <div class="result-head">
+    <div class="result-title">查詢結果　共 <b id="resultCount">4</b> 筆</div>
+    <button class="btn teal" onclick="document.getElementById('directXml').click()">批次匯入招標作業</button>
+<input id="directXml" type="file" accept=".xml,text/xml,application/xml" multiple style="display:none" onchange="directImport(this.files)">
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>序號</th><th>計畫年度</th><th>計畫編號</th><th>計畫名稱</th>
+        <th>上網案號</th><th>上網日期</th><th>開標日期</th><th>招標作業資料建立</th><th>功能</th>
+      </tr></thead>
+      <tbody id="resultRows">
+        <tr data-year="115" data-no="115RH002" data-name="115年委辦計畫作業管理系統升級、資安及維運計畫" data-status="已建立"><td class="center">1</td><td class="center">115</td><td>115RH002</td><td>115年委辦計畫作業管理系統升級、資安及維運計畫</td><td>1150209013B</td><td class="center">115/02/09</td><td class="center">115/03/05</td><td class="center ok">已建立</td><td class="center"><button class="btn" onclick="goTender('115RH002','115年委辦計畫作業管理系統升級、資安及維運計畫')">進入招標作業</button></td></tr>
+        <tr data-year="115" data-no="115A003" data-name="坡地防災資訊整合計畫" data-status="未建立"><td class="center">2</td><td class="center">115</td><td>115A003</td><td>坡地防災資訊整合計畫</td><td>-</td><td class="center">-</td><td class="center">-</td><td class="center pending">未建立</td><td class="center"><button class="btn" onclick="goTender('115A003','坡地防災資訊整合計畫')">進入招標作業</button></td></tr>
+        <tr data-year="115" data-no="115A008" data-name="農村發展跨域合作計畫" data-status="未建立"><td class="center">3</td><td class="center">115</td><td>115A008</td><td>農村發展跨域合作計畫</td><td>-</td><td class="center">-</td><td class="center">-</td><td class="center pending">未建立</td><td class="center"><button class="btn" onclick="goTender('115A008','農村發展跨域合作計畫')">進入招標作業</button></td></tr>
+        <tr data-year="114" data-no="114B021" data-name="集水區治理成效管理計畫" data-status="已建立"><td class="center">4</td><td class="center">114</td><td>114B021</td><td>集水區治理成效管理計畫</td><td>114-021</td><td class="center">114/08/20</td><td class="center">114/09/05</td><td class="center ok">已建立</td><td class="center"><button class="btn" onclick="goTender('114B021','集水區治理成效管理計畫')">進入招標作業</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</div>
+
+
+<div class="original-page" id="originalTenderPage">
+  <div class="original-top">
+    <div class="original-title">招標作業</div>
+    <button class="back" onclick="backToImport()">返回招標作業匯入</button>
+  </div>
+  <div class="original-content">
+    <div style="color:#3c83a0;margin-bottom:8px">教學影片</div>
+    <div class="detail-grid">
+      <div class="dl">計畫名稱</div><div class="dv" id="detailName"></div>
+      <div class="dl">計畫編號</div><div class="dv" id="detailNo"></div>
+      <div class="dl">上網案號</div><div class="dv" id="detailTender"></div>
+      <div class="dl">上網日期</div><div class="dv" id="detailDate"></div>
+      <div class="dl">上網金額(元)</div><div class="dv" style="grid-column:span 3">依原招標作業資料顯示各經費來源、預算金額及計畫分攤金額</div>
+      <div class="dl">刊登政府採購公報日期</div><div class="dv">115/09/02</div>
+      <div class="dl">截標日期</div><div class="dv">115/09/14</div>
+      <div class="dl">開標日期</div><div class="dv">115/09/15</div>
+      <div class="dl">開標地點</div><div class="dv">本署指定地點</div>
+    </div>
+    <div class="original-note">※ Demo 模擬「帶入計畫識別碼後，直接進入系統原有招標作業功能」。正式系統應導向既有招標作業 URL／Route，而非另建檢視頁。</div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal" style="display:none!important">
+<div class="modal">
+  <div class="modal-title"><span>批次匯入招標作業</span><span class="close" onclick="closeModal()">×</span></div>
+  <div class="modal-body">
+    <div class="notice">
+      可一次選擇多個招標作業檔案。系統將先依<b>計畫編號</b>比對既有計畫，並檢核計畫名稱及招標作業必填欄位。<br>
+      檢核成功才寫入；單一檔案失敗不影響其他檔案匯入。
+    </div>
+    <div class="upload">
+      <div style="font-size:16px;margin-bottom:10px">請選擇欲匯入的招標作業 XML 檔案</div>
+      <input id="files" type="file" multiple onchange="preview()">
+    </div>
+    <table class="file-table">
+      <thead><tr><th style="width:45px">序號</th><th>檔案名稱</th><th style="width:120px">檢核結果</th><th>問題說明</th></tr></thead>
+      <tbody id="fileBody"><tr><td colspan="4" class="center">尚未選擇檔案</td></tr></tbody>
+    </table>
+    <div id="err" class="msg error"></div>
+    <div id="succ" class="msg success"></div>
+  </div>
+  <div class="modal-foot"><button class="btn" onclick="closeModal()">取消</button> <button class="btn teal" onclick="doImport()">檢核並匯入</button></div>
+</div>
+</div>
+<script>
+
+function doSearch(){
+ const y=document.getElementById('yearFrom').value;
+ const no=document.getElementById('planNo').value.trim().toLowerCase();
+ const name=document.getElementById('planName').value.trim().toLowerCase();
+ const status=document.querySelector('input[name="buildStatus"]:checked').value;
+ let count=0;
+ document.querySelectorAll('#resultRows tr').forEach(tr=>{
+   const show=(!y||tr.dataset.year===y)&&tr.dataset.no.toLowerCase().includes(no)&&tr.dataset.name.toLowerCase().includes(name)&&(!status||tr.dataset.status===status);
+   tr.style.display=show?'':'none'; if(show)count++;
+ });
+ document.getElementById('resultCount').textContent=count;
+}
+function clearSearch(){
+ document.getElementById('yearFrom').value='';
+ document.getElementById('planNo').value='';
+ document.getElementById('planName').value='';
+ document.querySelector('input[name="buildStatus"][value=""]').checked=true;
+ doSearch();
+}
+function goTender(no,name){
+ let source="<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" class=\"containerHead\">\n        <tbody><tr>\n            <td align=\"left\" valign=\"top\">\n                <table class=\"table table-bordered\">\n                    <tbody><tr>\n                        <td class=\"TitleText\">計畫名稱\n                        </td>\n                        <td class=\"ContentText\" style=\"text-align: left;\">\n                            <span id=\"ContentPlaceHolder1_lbPlanName\">__PLAN_NAME__</span>&nbsp;\n                        </td>\n                        <td class=\"TitleText\">計畫編號\n                        </td>\n                        <td class=\"ContentText\" style=\"text-align: left;\">\n                            <span id=\"ContentPlaceHolder1_lbPlanNo\">__PLAN_NO__</span>&nbsp;\n                        </td>\n                    </tr>\n                    <tr>\n                        <td class=\"TitleText\" style=\"width: 20%;\">上網案號\n                        </td>\n                        <td class=\"ContentText\" style=\"width: 35%; text-align: left;\">\n                            <input name=\"ctl00$ContentPlaceHolder1$txtCaseNo\" type=\"text\" value=\"1141231048B\" id=\"ContentPlaceHolder1_txtCaseNo\" class=\"form-control\" p_title=\"\" p_datatype=\"String\" p_isreq=\"False\" p_min=\"\" p_max=\"\">\n                            <span id=\"ContentPlaceHolder1_CaseNoRequiredFieldValidator\" style=\"display:none;\">必填</span>\n                        </td>\n                        <td class=\"TitleText\" style=\"width: 20%\">上網日期\n                        </td>\n                        <td class=\"ContentText\" style=\"width: 35%\">\n                            <input name=\"ctl00$ContentPlaceHolder1$txtSubmitDate\" type=\"text\" value=\"114/12/31\" maxlength=\"9\" id=\"ContentPlaceHolder1_txtSubmitDate\" class=\"form-control\" p_title=\"\" p_datatype=\"Date\" p_isreq=\"False\" p_min=\"1753/1/1\" p_max=\"9999/12/31\" style=\"width:70px;width: 100px;\"><img id=\"imgContentPlaceHolder1_txtSubmitDate\" onclick=\"showCalender('ContentPlaceHolder1_txtSubmitDate','tw/mm/dd');\" src=\"/WebResource.axd?d=fiSBW8f_q4yYTqaHOKsHOVhDx1_OHJQW1koSgwTGWzocTQYwnpSlndfdCgFZH5V0b-YXt1s0ddrz-YKn3JP7ITg_8J3lFYeKV71Yb8dtwLF-F7tpzw_cuyWcVwLKXp-olK2flw2&amp;t=637171900460552251\">                           \n                            <br>\n                            <span id=\"ContentPlaceHolder1_GLabel1\" class=\"labelInfo\">※格式：如民國101年12月20日請輸入101/12/20</span>\n                        </td>\n                    </tr>\n                    <tr>\n                        <td class=\"TitleText\" style=\"width: 15%;\">上網金額(元)\n                        </td>\n                        <td class=\"ContentText\" colspan=\"3\" style=\"margin: 3px; padding: 3px;\">\n                            <div>\n\t<table cellspacing=\"0\" rules=\"all\" border=\"1\" id=\"ContentPlaceHolder1_gvBidBudget\" style=\"width:99%;border-collapse:collapse;\">\n\t\t<tbody><tr>\n\t\t\t<th class=\"TitleText\" scope=\"col\">經費來源</th><th class=\"TitleText\" scope=\"col\" style=\"width:15%;\">預算金額</th><th class=\"TitleText\" scope=\"col\" style=\"width:15%;\">計畫分攤金額</th>\n\t\t</tr><tr>\n\t\t\t<td>\n                                            <span id=\"ContentPlaceHolder1_gvBidBudget_lblPlanType_0\" style=\"margin-left: 3px\">(115)農村規劃及培力</span>\n                                            / \n                                            <span id=\"ContentPlaceHolder1_gvBidBudget_lblSubPlanType_0\">農村人力及教育推廣</span>\n                                        </td><td align=\"right\">\n                                            <span id=\"ContentPlaceHolder1_gvBidBudget_lblBudget_0\" style=\"margin: 3px\">3,850,000</span>\n                                        </td><td>\n                                            <input type=\"hidden\" name=\"ctl00$ContentPlaceHolder1$gvBidBudget$ctl02$hidBUDGET_SOURCE_SEQ\" id=\"ContentPlaceHolder1_gvBidBudget_hidBUDGET_SOURCE_SEQ_0\" value=\"6159\">\n                                            <input name=\"ctl00$ContentPlaceHolder1$gvBidBudget$ctl02$txtBidBudget\" type=\"text\" value=\"3,850,000\" id=\"ContentPlaceHolder1_gvBidBudget_txtBidBudget_0\" disabled=\"disabled\" class=\"aspNetDisabled textBoxCurrency\" p_title=\"\" p_datatype=\"Currency\" p_isreq=\"False\" p_min=\"\" p_max=\"\" onchange=\"GTextBoxFormatCurrency(0,this);\" style=\"width:100px;margin: 3px;\">\n                                            <span id=\"ContentPlaceHolder1_gvBidBudget_BudgetRequiredFieldValidator_0\" style=\"display:none;\">必填</span>\n                                        </td>\n\t\t</tr>\n\t</tbody></table>\n</div>\n                            <div id=\"ContentPlaceHolder1_divSingleBudget\" style=\"display:none;\">\n                                <input name=\"ctl00$ContentPlaceHolder1$txtBudget\" type=\"text\" value=\"3,850,000\" id=\"ContentPlaceHolder1_txtBudget\" class=\"textBox\" p_title=\"\" p_datatype=\"Currency\" p_isreq=\"False\" p_min=\"\" p_max=\"\" onchange=\"GTextBoxFormatCurrency(0,this);\" style=\"margin-top: 5px; display: none\">\n                                <span id=\"ContentPlaceHolder1_BudgetRequiredFieldValidator\" style=\"display:none;\">必填</span>\n\n                            </div>\n                        </td>\n                    </tr>\n                    <tr>\n                        <td class=\"TitleText\" style=\"width: 15%\">刊登政府採購公報日期\n                        </td>\n                        <td class=\"ContentText\" style=\"width: 35%\">\n                            <input name=\"ctl00$ContentPlaceHolder1$txtNoticeDate\" type=\"text\" value=\"115/01/02\" maxlength=\"9\" id=\"ContentPlaceHolder1_txtNoticeDate\" class=\"form-control\" p_title=\"\" p_datatype=\"Date\" p_isreq=\"False\" p_min=\"1753/1/1\" p_max=\"9999/12/31\" style=\"width:70px;width: 100px;\"><img id=\"imgContentPlaceHolder1_txtNoticeDate\" onclick=\"showCalender('ContentPlaceHolder1_txtNoticeDate','tw/mm/dd');\" src=\"/WebResource.axd?d=fiSBW8f_q4yYTqaHOKsHOVhDx1_OHJQW1koSgwTGWzocTQYwnpSlndfdCgFZH5V0b-YXt1s0ddrz-YKn3JP7ITg_8J3lFYeKV71Yb8dtwLF-F7tpzw_cuyWcVwLKXp-olK2flw2&amp;t=637171900460552251\">                           \n                            <br>\n                            <span id=\"ContentPlaceHolder1_GLabel2\" class=\"labelInfo\">※格式：如民國101年12月20日請輸入101/12/20</span>\n                        </td>\n                        <td class=\"TitleText\">截標日期\n                        </td>\n                        <td class=\"ContentText\" style=\"text-align: left;\">\n                            <input name=\"ctl00$ContentPlaceHolder1$txtEndBidDate\" type=\"text\" value=\"115/01/12\" maxlength=\"9\" id=\"ContentPlaceHolder1_txtEndBidDate\" class=\"form-control\" p_title=\"\" p_datatype=\"Date\" p_isreq=\"False\" p_min=\"1753/1/1\" p_max=\"9999/12/31\" style=\"width:70px;width: 100px;\"><img id=\"imgContentPlaceHolder1_txtEndBidDate\" onclick=\"showCalender('ContentPlaceHolder1_txtEndBidDate','tw/mm/dd');\" src=\"/WebResource.axd?d=fiSBW8f_q4yYTqaHOKsHOVhDx1_OHJQW1koSgwTGWzocTQYwnpSlndfdCgFZH5V0b-YXt1s0ddrz-YKn3JP7ITg_8J3lFYeKV71Yb8dtwLF-F7tpzw_cuyWcVwLKXp-olK2flw2&amp;t=637171900460552251\">                           \n                            <select name=\"ctl00$ContentPlaceHolder1$ddlEndBidNoon\" id=\"ContentPlaceHolder1_ddlEndBidNoon\" class=\"form-control\" p_title=\"\" p_datatype=\"String\" p_isreq=\"False\">\n\t<option value=\"上午\">上午</option>\n\t<option selected=\"selected\" value=\"下午\">下午 \n                                </option>\n\n</select>\n                            <select name=\"ctl00$ContentPlaceHolder1$ddlEndBidHour\" id=\"ContentPlaceHolder1_ddlEndBidHour\" class=\"form-control\" p_title=\"\" p_datatype=\"String\" p_isreq=\"False\">\n\t<option value=\"01\">1時</option>\n\t<option value=\"02\">2時</option>\n\t<option value=\"03\">3時</option>\n\t<option value=\"04\">4時</option>\n\t<option selected=\"selected\" value=\"05\">5時</option>\n\t<option value=\"06\">6時</option>\n\t<option value=\"07\">7時</option>\n\t<option value=\"08\">8時</option>\n\t<option value=\"09\">9時</option>\n\t<option value=\"10\">10時</option>\n\t<option value=\"11\">11時</option>\n\t<option value=\"12\">12時</option>\n\n</select>\n                            <input name=\"ctl00$ContentPlaceHolder1$txtEndBidMin\" type=\"text\" value=\"00\" maxlength=\"2\" id=\"ContentPlaceHolder1_txtEndBidMin\" class=\"form-control\" p_title=\"\" p_datatype=\"String\" p_isreq=\"False\" p_min=\"\" p_max=\"\" style=\"width:45px;\">\n                            <br>\n                            <span id=\"ContentPlaceHolder1_GLabel3\" class=\"labelInfo\">※格式：如民國101年12月20日請輸入101/12/20</span>\n                        </td>\n                    </tr>\n                    <tr>\n                        <td class=\"TitleText\">開標日期\n                        </td>\n                        <td class=\"ContentText\">\n                            <input name=\"ctl00$ContentPlaceHolder1$txtOpenBidDate\" type=\"text\" value=\"115/01/13\" maxlength=\"9\" id=\"ContentPlaceHolder1_txtOpenBidDate\" class=\"form-control\" p_title=\"\" p_datatype=\"Date\" p_isreq=\"False\" p_min=\"1753/1/1\" p_max=\"9999/12/31\" style=\"width:70px;width: 100px;\"><img id=\"imgContentPlaceHolder1_txtOpenBidDate\" onclick=\"showCalender('ContentPlaceHolder1_txtOpenBidDate','tw/mm/dd');\" src=\"/WebResource.axd?d=fiSBW8f_q4yYTqaHOKsHOVhDx1_OHJQW1koSgwTGWzocTQYwnpSlndfdCgFZH5V0b-YXt1s0ddrz-YKn3JP7ITg_8J3lFYeKV71Yb8dtwLF-F7tpzw_cuyWcVwLKXp-olK2flw2&amp;t=637171900460552251\">\n                            <select name=\"ctl00$ContentPlaceHolder1$ddlOpenBidNoon\" id=\"ContentPlaceHolder1_ddlOpenBidNoon\" class=\"form-control\" p_title=\"\" p_datatype=\"String\" p_isreq=\"False\">\n\t<option selected=\"selected\" value=\"上午\">上午</option>\n\t<option value=\"下午\">下午 \n                                </option>\n\n</select>\n                            <select name=\"ctl00$ContentPlaceHolder1$ddlOpenBidHour\" id=\"ContentPlaceHolder1_ddlOpenBidHour\" class=\"form-control\" p_title=\"\" p_datatype=\"String\" p_isreq=\"False\">\n\t<option value=\"01\">1時</option>\n\t<option value=\"02\">2時</option>\n\t<option value=\"03\">3時</option>\n\t<option value=\"04\">4時</option>\n\t<option value=\"05\">5時</option>\n\t<option value=\"06\">6時</option>\n\t<option value=\"07\">7時</option>\n\t<option value=\"08\">8時</option>\n\t<option selected=\"selected\" value=\"09\">9時</option>\n\t<option value=\"10\">10時</option>\n\t<option value=\"11\">11時</option>\n\t<option value=\"12\">12時</option>\n\n</select>\n                            <input name=\"ctl00$ContentPlaceHolder1$txtOpenBidMin\" type=\"text\" value=\"00\" maxlength=\"2\" id=\"ContentPlaceHolder1_txtOpenBidMin\" class=\"form-control\" p_title=\"\" p_datatype=\"String\" p_isreq=\"False\" p_min=\"\" p_max=\"\" style=\"width:45px;\">\n                            <br>\n                            <span id=\"ContentPlaceHolder1_GLabel4\" class=\"labelInfo\">※格式：如民國101年12月20日請輸入101/12/20</span>\n                        </td>\n                        <td class=\"TitleText\">開標地點\n                        </td>\n                        <td class=\"ContentText\">\n                            <select name=\"ctl00$ContentPlaceHolder1$SelectLocation1$ddlLOCATION\" onchange=\"javascript:setTimeout('__doPostBack(\\'ctl00$ContentPlaceHolder1$SelectLocation1$ddlLOCATION\\',\\'\\')', 0)\" id=\"ContentPlaceHolder1_SelectLocation1_ddlLOCATION\" class=\"form-control\" p_title=\"\" p_datatype=\"String\" p_isreq=\"False\">\n\t<option value=\"0\">-請選擇-</option>\n\t<option value=\"29\">本署第一會議室</option>\n\t<option selected=\"selected\" value=\"30\">本署第二會議室</option>\n\t<option value=\"33\">本署第三會議室</option>\n\t<option value=\"44\">本署府前辦公室第一會議室</option>\n\t<option value=\"47\">本署府前辦公室第二會議室</option>\n\t<option value=\"49\">本署府西辦公室資訊管理科討論室</option>\n\t<option value=\"50\">本署府西辦公室第二會議室</option>\n\t<option value=\"51\">本署府西辦公室第三會議室</option>\n\t<option value=\"52\">本署府西辦公室第四會議室</option>\n\t<option value=\"55\">本署府西辦公室第一會議室</option>\n\t<option value=\"59\">本署府西辦公室專題討論會議室</option>\n\t<option value=\"60\">本署應變小組會議室</option>\n\t<option value=\"61\">本署府西辦公室應變小組會議室</option>\n\t<option value=\"62\">本署府前辦公室第三會議室</option>\n\t<option value=\"63\">雲端會議室</option>\n\t<option value=\"65\">本署臺北辦公室1201會議室</option>\n\t<option value=\"other\">其它</option>\n\n</select>&nbsp;\n<input id=\"ContentPlaceHolder1_SelectLocation1_cbIsSelfOrder\" type=\"checkbox\" name=\"ctl00$ContentPlaceHolder1$SelectLocation1$cbIsSelfOrder\" checked=\"checked\" onclick=\"javascript:setTimeout('__doPostBack(\\'ctl00$ContentPlaceHolder1$SelectLocation1$cbIsSelfOrder\\',\\'\\')', 0)\"><label for=\"ContentPlaceHolder1_SelectLocation1_cbIsSelfOrder\">自行預約</label>\n                            <input type=\"submit\" name=\"ctl00$ContentPlaceHolder1$btnCheckRoom\" value=\"檢查會議室\" id=\"ContentPlaceHolder1_btnCheckRoom\" disabled=\"disabled\" class=\"aspNetDisabled btn btn-default\" style=\"cursor:default;\">\n                        </td>\n                    </tr>\n                    <tr>\n                        <td class=\"ContentText\" colspan=\"4\" align=\"center\">\n                            <input type=\"submit\" name=\"ctl00$ContentPlaceHolder1$btnSave\" value=\"儲存招標作業資訊\" onclick=\"javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$ContentPlaceHolder1$btnSave&quot;, &quot;&quot;, true, &quot;Save&quot;, &quot;&quot;, false, false))\" id=\"ContentPlaceHolder1_btnSave\" class=\"btn btn-primary\" style=\"cursor:hand\">\n                            <input name=\"ctl00$ContentPlaceHolder1$Button13\" type=\"button\" id=\"ContentPlaceHolder1_Button13\" class=\"btn btn-info\" value=\"產生招標作業文件\" onclick=\"OpenDocumentLink();\">\n                        </td>\n                    </tr>\n                </tbody></table>\n            </td>\n        </tr>\n    </tbody></table>";
+ source=source.replace('__PLAN_NAME__',name).replace('__PLAN_NO__',no);
+ const shell=`<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>招標作業欄位</title>
+ <style>
+ body{font:16px "Microsoft JhengHei",Arial,sans-serif;color:#555;margin:16px;background:#fff}
+ .containerHead{width:100%}.table{width:100%;border-collapse:collapse}.table td,.table th{border:1px solid #ccc;padding:8px}
+ .TitleText{background:#e5ef7a;color:#65702d}.ContentText{background:#eee}
+ .form-control{display:inline-block;height:38px;border:1px solid #bbb;border-radius:4px;padding:5px 10px;font:inherit;vertical-align:middle}
+ .labelInfo{color:#ff5b5b;font-size:14px}.btn{border:1px solid transparent;border-radius:4px;padding:9px 15px;font:inherit;cursor:pointer}
+ .btn-primary{background:#337ab7;color:#fff}.btn-info{background:#46b8da;color:#fff}.btn-default{background:#fff;border-color:#ccc}
+ .aspNetDisabled{opacity:.7}.textBoxCurrency{text-align:right}
+ #pageTitle{font-size:28px;margin:0 0 18px}#pageTitle:before{content:"";display:inline-block;width:9px;height:34px;background:#15999a;border-radius:5px;margin-right:18px;vertical-align:-6px}
+ img{vertical-align:middle;max-width:32px}.save-note{display:none;margin:12px auto;padding:10px;width:70%;text-align:center;background:#eef8eb;border:1px solid #9ac694;color:#34743b}
+ </style></head><body><div id="pageTitle">招標作業欄位</div>${source}<div class="save-note" id="saveNote">招標作業資訊儲存成功。</div>
+ <script>
+ window.showCalender=function(){};
+ window.setTimeout=function(fn){return 0};
+ window.__doPostBack=function(){};
+ window.GTextBoxFormatCurrency=function(){};
+ window.OpenDocumentLink=function(){alert('Demo：產生招標作業文件');};
+ const save=document.getElementById('ContentPlaceHolder1_btnSave');
+ if(save){
+   save.type='button';
+   save.removeAttribute('onclick');
+   save.onclick=function(){
+     const tender=document.getElementById('ContentPlaceHolder1_txtCaseNo').value.trim();
+     const webDate=document.getElementById('ContentPlaceHolder1_txtSubmitDate').value.trim();
+     const openDate=document.getElementById('ContentPlaceHolder1_txtOpenBidDate').value.trim();
+     if(!tender){alert('請輸入上網案號');return;}
+     localStorage.setItem('tender_'+${JSON.stringify(no)},JSON.stringify({no:${JSON.stringify(no)},name:${JSON.stringify(name)},tender,webDate,openDate}));
+     document.getElementById('saveNote').style.display='block';
+     alert('招標作業資訊儲存成功。\\n回到「招標作業匯入」頁面重新查詢，即可看到已建立資料。');
+   };
+ }
+ const doc=document.getElementById('ContentPlaceHolder1_Button13');
+ if(doc){doc.removeAttribute('onclick');doc.onclick=()=>alert('Demo：產生招標作業文件');}
+ <\/script></body></html>`;
+ const blob=new Blob([shell],{type:'text/html;charset=utf-8'});
+ window.open(URL.createObjectURL(blob),'_blank');
+}
+function backToImport(){document.getElementById('originalTenderPage').style.display='none'}
+
+
+function directImport(files){
+ const fs=[...files]; if(!fs.length)return;
+ const nonXml=fs.filter(f=>!f.name.toLowerCase().endsWith('.xml'));
+ if(nonXml.length){alert('僅可選擇 XML 檔案。');return}
+ alert(`已選擇 ${fs.length} 個 XML 檔案。\n\n系統將直接進行計畫比對與欄位檢核；檢核成功的案件建立招標作業資料，失敗案件會顯示錯誤原因。\n\nDemo：已完成檔案選取流程。`);
+ document.getElementById('directXml').value='';
+}
+function refreshSaved(){
+ document.querySelectorAll('#resultRows tr').forEach(r=>{
+   const rec=localStorage.getItem('tender_'+r.dataset.no);
+   if(rec){
+     const d=JSON.parse(rec);
+     r.dataset.status='已建立';
+     r.cells[4].textContent=d.tender;
+     r.cells[5].textContent=d.webDate;
+     r.cells[6].textContent=d.openDate;
+     r.cells[7].textContent='已建立';
+     r.cells[7].className='center ok';
+   }
+ });
+ doSearch();
+}
+window.addEventListener('focus',refreshSaved);
+window.addEventListener('storage',refreshSaved);
+window.addEventListener('load',refreshSaved);
+
+const modal=document.getElementById('modal');
+function openModal(){modal.style.display='flex'}
+function closeModal(){modal.style.display='none'}
+function preview(){
+ const fs=[...document.getElementById('files').files],b=document.getElementById('fileBody');
+ b.innerHTML=fs.length?'':'<tr><td colspan="4" class="center">尚未選擇檔案</td></tr>';
+ fs.forEach((f,i)=>b.innerHTML+=`<tr><td class="center">${i+1}</td><td>${f.name}</td><td class="center">待檢核</td><td>尚未進行資料比對</td></tr>`);
+}
+function doImport(){
+ const fs=[...document.getElementById('files').files]; if(!fs.length){alert('請先選擇檔案');return}
+ const b=document.getElementById('fileBody'); b.innerHTML='';
+ fs.forEach((f,i)=>{
+   let state,desc;
+   if(i%3===0){state='<span class="ok">匯入成功</span>';desc='計畫編號、計畫名稱及必填欄位檢核通過。'}
+   else if(i%3===1){state='<span class="fail">匯入失敗</span>';desc='A計畫：開標日期未填寫。'}
+   else{state='<span class="fail">匯入失敗</span>';desc='計畫編號 115A001 已存在招標作業，不可重複匯入。'}
+   b.innerHTML+=`<tr><td class="center">${i+1}</td><td>${f.name}</td><td class="center">${state}</td><td>${desc}</td></tr>`;
+ });
+ const ok=fs.filter((_,i)=>i%3===0).length,fail=fs.length-ok;
+ document.getElementById('succ').style.display='block';
+ document.getElementById('succ').innerHTML=`匯入完成：成功 ${ok} 筆。`;
+ document.getElementById('err').style.display=fail?'block':'none';
+ document.getElementById('err').innerHTML=`${fail} 筆匯入失敗，請依上方問題說明修正後重新匯入。`;
+}
+</script>
+</body></html>
